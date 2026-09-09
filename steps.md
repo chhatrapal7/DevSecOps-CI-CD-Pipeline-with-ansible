@@ -189,42 +189,6 @@ dnf update -y
 
 ---
 
-# 11. Install Ansible
-
-Install Ansible:
-
-```bash
-sudo dnf install ansible -y
-```
-
-Install Python and pip:
-
-```bash
-sudo dnf install python3 python3-pip -y
-```
-
-Verify Ansible:
-
-```bash
-ansible --version
-```
-Master to Node Configuration for 
-https://github.com/chhatrapal7/ansible-notes/blob/c547d0d8cc5e7e0d1224ae1a01dc35f867fefe46/Ansible-setup.md
-
----
-Our Ansible architecture is:
-
-```text
-                 Ansible Master
-              Jenkins + Ansible
-                     |
-             +-------+-------+
-             |               |
-             v               v
-         Tomcat Node 1   Tomcat Node 2
-```
-
-
 # 12. Install Jenkins
 
 Import Jenkins repository/key and install Jenkins according to the current Jenkins installation instructions for Amazon Linux.
@@ -319,8 +283,6 @@ Example:
 New password: ********
 Retype new password: ********
 ```
-
-> Do not commit this password to GitHub. The password shown in old lab notes such as `reyaz123` or `root123456` should be treated as example/lab credentials only.
 
 ---
 
@@ -601,8 +563,6 @@ Build Now
 ```
 
 ---
-
-# Understand the Basic Pipeline
 
 ### Checkout
 
@@ -897,6 +857,76 @@ and the appropriate SSH private key.
 Use whichever SSH user/key configuration actually exists on your worker nodes.
 
 ---
+
+# 66. Jenkins Ansible Configuration
+
+Go to:
+
+```text
+Manage Jenkins
+→ Tools
+→ Ansible installations
+```
+
+Configure:
+
+```text
+Name:
+ansible
+
+Path:
+<actual path returned by which ansible>
+```
+
+For your environment this may be:
+
+```text
+/bin
+```
+
+Verify:
+
+```bash
+which ansible
+```
+
+---
+
+# Jenkins Ansible Credentials
+
+Go to:
+
+```text
+Manage Jenkins
+→ Credentials
+→ System
+→ Global credentials
+→ Add Credentials
+```
+
+Example:
+
+```text
+Kind:
+Username with password
+
+Username:
+root
+
+Password:
+<worker node root password -> root123456>
+
+ID:
+linuxcreds
+```
+
+The Jenkinsfile will use:
+
+```groovy
+credentialsId: 'linuxcreds'
+```
+
+
 
 # 32. Step 3 - Setup SonarQube
 
@@ -1355,7 +1385,7 @@ ansible/
 
 ---
 
-# 50. tomcat-users.xml
+## tomcat-users.xml
 
 Create:
 
@@ -1365,33 +1395,69 @@ vi tomcat-users.xml
 
 Use the required Tomcat roles/users for the project.
 
-Example:
-
 ```xml
-<tomcat-users>
-    <role rolename="manager-gui"/>
-    <role rolename="manager-script"/>
-    <user username="tomcat" password="CHANGE_ME" roles="manager-gui,manager-script"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<tomcat-users xmlns="http://tomcat.apache.org/xml"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://tomcat.apache.org/xml tomcat-users.xsd"
+              version="1.0">
+<!--
+  By default, no user is included in the "manager-gui" role required
+  to operate the "/manager/html" web application.  If you wish to use this app,
+  you must define such a user - the username and password are arbitrary.
+
+  Built-in Tomcat manager roles:
+    - manager-gui    - allows access to the HTML GUI and the status pages
+    - manager-script - allows access to the HTTP API and the status pages
+    - manager-jmx    - allows access to the JMX proxy and the status pages
+    - manager-status - allows access to the status pages only
+
+  The users below are wrapped in a comment and are therefore ignored. If you
+  wish to configure one or more of these users for use with the manager web
+  application, do not forget to remove the <!.. ..> that surrounds them. You
+  will also need to set the passwords to something appropriate.
+-->
+<!--
+  <user username="admin" password="<must-be-changed>" roles="manager-gui"/>
+  <user username="robot" password="<must-be-changed>" roles="manager-script"/>
+-->
+<!--
+  The sample user and role entries below are intended for use with the
+  examples web application. They are wrapped in a comment and thus are ignored
+  when reading this file. If you wish to configure these users for use with the
+  examples web application, do not forget to remove the <!.. ..> that surrounds
+  them. You will also need to set the passwords to something appropriate.
+-->
+<!--
+  <role rolename="tomcat"/>
+  <role rolename="role1"/>
+  <user username="tomcat" password="<must-be-changed>" roles="tomcat"/>
+  <user username="both" password="<must-be-changed>" roles="tomcat,role1"/>
+  <user username="role1" password="<must-be-changed>" roles="role1"/>
+-->
+  <role rolename="manager-gui"/>
+  <role rolename="manager-script"/>
+  <user username="tomcat" password="root123456" roles="manager-gui, manager-script"/>
 </tomcat-users>
 ```
 
-Replace:
-
-```text
-CHANGE_ME
-```
-
-with your lab password.
-
-### Security
-
-Do not commit the real production password to a public GitHub repository.
-
-If the repository is public, use Ansible Vault/Jenkins Credentials/another secret-management mechanism instead.
-
----
-
-# 51. context.xml
+## context.xml
 
 Create:
 
@@ -1401,14 +1467,34 @@ vi context.xml
 
 Use the `context.xml` content required for your Tomcat Manager configuration.
 
-You can keep your tested `context.xml` in GitHub and let Ansible copy it to:
+```bash
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<Context antiResourceLocking="false" privileged="true" >
+  <CookieProcessor className="org.apache.tomcat.util.http.Rfc6265CookieProcessor"
+                   sameSiteCookies="strict" />
+  <Manager sessionAttributeValueClassNameFilter="java\.lang\.(?:Boolean|Integer|Long|Number|String)|org\.apache\.catalina\.filters\.CsrfPreventionFilter\$LruCache(?:\$1)?|java\.util\.(?:Linked)?HashMap"/>
+</Context>
+```
 
 ```text
 /root/tomcat/webapps/manager/META-INF/context.xml
 ```
-
-Do not blindly delete lines by line number unless you have verified the exact Tomcat version.
-
 ---
 
 # 52. Tomcat Ansible Playbook
@@ -1430,7 +1516,7 @@ Use:
 
     - name: Download tomcat from dlcdn
       get_url:
-        url: "https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.25/bin/apache-tomcat-11.0.25.tar.gz"
+        url: "https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.25/bin/apache-tomcat-11.0.25.tar"
         dest: "/root/"
 
     - name: untar the apache file
@@ -1495,18 +1581,7 @@ The above playbook uses:
 ```text
 Tomcat 11.0.25
 ```
-
-Your older notes contain different versions such as:
-
-```text
-Tomcat 10.1.33
-Tomcat 10.1.42
-Tomcat 11.0.24
-Tomcat 11.0.25
-```
-
-Do not mix these versions accidentally.
-
+    
 If you change the Tomcat version in the download URL, also change:
 
 ```text
@@ -1547,8 +1622,6 @@ sed -i 's/87/93/g' tomcat.yml
 
 This should only be used if your script/playbook specifically contains a version number that needs replacement.
 
-Do not execute this command blindly.
-
 Always check:
 
 ```bash
@@ -1559,7 +1632,7 @@ and update the actual version/path intentionally.
 
 ---
 
-# 55. Do Not Run the Tomcat Playbook Until Files Are Ready
+## Do Not Run the Tomcat Playbook Until Files Are Ready
 
 Before running:
 
@@ -1682,16 +1755,12 @@ tomcat
 Password:
 <your configured Tomcat password>
 ```
-
-The password in your old lab notes such as:
+Use the password actually configured in `tomcat-users.xml`.
 
 ```text
-root123
+admin
 root123456
 ```
-
-is only an example. Use the password actually configured in `tomcat-users.xml`.
-
 ---
 
 # 60. Where Is the Tomcat Password Used?
@@ -1707,7 +1776,7 @@ tomcat-users.xml
 Example:
 
 ```xml
-<user username="tomcat" password="CHANGE_ME" roles="manager-gui,manager-script"/>
+<user username="tomcat" password="******" roles="manager-gui,manager-script"/>
 ```
 
 If Jenkins is directly using Tomcat Manager deployment, those credentials would also be stored in:
@@ -1764,7 +1833,7 @@ Use:
 
 ---
 
-# 62. Important deploy.yml Path
+# Important deploy.yml Path
 
 This line:
 
@@ -1789,7 +1858,7 @@ find /var/lib/jenkins/workspace -name "*.war"
 For example:
 
 ```text
-/var/lib/jenkins/workspace/project/target/myapp.war
+/var/lib/jenkins/workspace/pipelin1/target/myapp.war
 ```
 
 If your Jenkins job has another name, update the path accordingly.
@@ -1872,106 +1941,6 @@ You can keep:
 ├── tomcat-users.xml
 └── context.xml
 ```
-
----
-
-# 66. Jenkins Ansible Configuration
-
-Go to:
-
-```text
-Manage Jenkins
-→ Tools
-→ Ansible installations
-```
-
-Configure:
-
-```text
-Name:
-ansible
-
-Path:
-<actual path returned by which ansible>
-```
-
-For your environment this may be:
-
-```text
-/bin
-```
-
-Verify:
-
-```bash
-which ansible
-```
-
----
-
-# 67. Jenkins Ansible Credentials
-
-Go to:
-
-```text
-Manage Jenkins
-→ Credentials
-→ System
-→ Global credentials
-→ Add Credentials
-```
-
-Example:
-
-```text
-Kind:
-Username with password
-
-Username:
-root
-
-Password:
-<worker node root password>
-
-ID:
-linuxcreds
-```
-
-The Jenkinsfile will use:
-
-```groovy
-credentialsId: 'linuxcreds'
-```
-
-Again, never write the actual password inside:
-
-```text
-Jenkinsfile
-GitHub
-README.md
-steps.md
-```
-
----
-
-# 68. Configure Ansible Inventory
-
-Jenkins/Ansible will use:
-
-```text
-/etc/ansible/hosts
-```
-
-Example:
-
-```ini
-[prod]
-172.31.20.40
-172.31.21.25
-```
-
-Replace these with your actual private IP addresses.
-
 ---
 
 # 69. Configure Ansible Playbook
@@ -2222,166 +2191,6 @@ Tomcat 1         Tomcat 2
 ```
 
 ---
-
-# 72. Complete End-to-End Execution
-
-Now the entire project works like this.
-
-### Step 1
-
-Developer changes Java code.
-
-```text
-Developer
-    |
-    v
-Java Code
-```
-
-### Step 2
-
-Developer pushes code:
-
-```bash
-git add .
-git commit -m "Update application"
-git push origin main
-```
-
-### Step 3
-
-Jenkins checks out the new code.
-
-```text
-GitHub
-   ↓
-Jenkins
-```
-
-### Step 4
-
-Jenkins compiles:
-
-```bash
-mvn compile
-```
-
-### Step 5
-
-Jenkins runs tests:
-
-```bash
-mvn test
-```
-
-### Step 6
-
-Jenkins creates the WAR:
-
-```bash
-mvn package
-```
-
-### Step 7
-
-Jenkins sends the code for SonarQube analysis.
-
-```text
-Jenkins
-   ↓
-SonarQube
-```
-
-### Step 8
-
-Jenkins uploads the WAR to S3.
-
-```text
-WAR
- ↓
-S3
-```
-
-### Step 9
-
-Jenkins calls Ansible.
-
-```text
-Jenkins
-   ↓
-Ansible
-```
-
-### Step 10
-
-Ansible connects to both Tomcat nodes.
-
-```text
-Ansible
-   |
-   +----> Tomcat Node 1
-   |
-   +----> Tomcat Node 2
-```
-
-### Step 11
-
-WAR is copied to:
-
-```text
-/root/tomcat/webapps/
-```
-
-### Step 12
-
-Tomcat deploys the WAR.
-
-### Step 13
-
-The updated application becomes available on both worker nodes.
-
-```text
-Tomcat Node 1 → Updated Application
-
-Tomcat Node 2 → Updated Application
-```
-
----
-
-# 73. Complete Project Flow in One Line
-
-```text
-Developer
-   ↓
-GitHub
-   ↓
-Jenkins
-   ↓
-Checkout
-   ↓
-Maven Compile
-   ↓
-Maven Test
-   ↓
-Maven Package
-   ↓
-SonarQube
-   ↓
-WAR Artifact
-   ↓
-Amazon S3
-   ↓
-Ansible
-   ↓
-Tomcat Node 1
-   +
-Tomcat Node 2
-   ↓
-Updated Java Application
-```
-
----
-
 # 74. Credentials and Password Reference
 
 This section is important because several different credentials are used in the project.
@@ -2391,24 +2200,18 @@ This section is important because several different credentials are used in the 
 Used to login to EC2 servers.
 
 ```text
-SSH Key / EC2 Key Pair
+SSH Key 
 ```
-
-Do not upload the private key to GitHub.
 
 ---
 
 ## 2. Root Password
-
-Used in the lab when configuring root access:
 
 ```bash
 passwd root
 ```
 
 This is used for SSH/password authentication if that method is enabled.
-
-Do not commit it to GitHub.
 
 ---
 
@@ -2428,7 +2231,7 @@ Username:
 root
 
 Password:
-<worker-node root password>
+<worker-node root password -> root123456>
 ```
 
 This is referenced by:
@@ -2450,7 +2253,7 @@ tomcat-users.xml
 Example:
 
 ```xml
-<user username="tomcat" password="CHANGE_ME" roles="manager-gui,manager-script"/>
+<user username="tomcat" password="*****" roles="manager-gui,manager-script"/>
 ```
 
 This is required only for Tomcat Manager-based authentication/deployment.
@@ -2465,14 +2268,6 @@ SonarQube authentication token/credential should be stored in:
 
 ```text
 Jenkins Credentials
-```
-
-Do not put the token in:
-
-```text
-Jenkinsfile
-GitHub
-steps.md
 ```
 
 ---
