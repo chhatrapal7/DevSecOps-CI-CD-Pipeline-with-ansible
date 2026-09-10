@@ -1,4 +1,4 @@
-# Enterprise Java Application CI/CD & Automated Deployment
+# Automated Java CI/CD Pipeline with Jenkins & Ansible
 
 ## Project Overview
 
