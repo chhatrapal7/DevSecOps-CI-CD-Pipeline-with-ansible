@@ -189,7 +189,7 @@ dnf update -y
 
 ---
 
-# 12. Install Jenkins
+# 6. Install Jenkins
 
 Import Jenkins repository/key and install Jenkins according to the current Jenkins installation instructions for Amazon Linux.
 
@@ -232,7 +232,7 @@ Open Jenkins in the browser and complete the initial setup.
 
 ---
 
-# 14. configure Ansible 
+# 7. configure Ansible
 
 We can configure hostnames for identification.
 
@@ -319,7 +319,7 @@ systemctl status sshd
 
 ---
 
-# 17. Check Private IP Addresses
+# 8. Check Private IP Addresses
 
 Run:
 
@@ -493,7 +493,7 @@ At this point the Ansible Master and both worker nodes are connected.
 
 ---
 
-# 23. Step 2 - Configure Jenkins Basic CI Pipeline
+# 10. Step 2 - Configure Jenkins Basic CI Pipeline
 
 Before integrating SonarQube, S3 and Ansible deployment, first verify that Jenkins can successfully:
 
@@ -648,7 +648,7 @@ The exact WAR name depends on your `pom.xml`.
 
 ---
 
-# 27. Jenkins Plugins Required
+# 11. Jenkins Plugins Required
 
 Now we will integrate all components.
 
@@ -685,7 +685,7 @@ After installation, restart Jenkins if Jenkins requests it.
 
 ---
 
-# 28. Configure Maven in Jenkins
+# 12. Configure Maven in Jenkins
 
 Go to:
 
@@ -718,7 +718,7 @@ mvn -version
 
 ---
 
-# 29. Configure Ansible in Jenkins
+# 13. Configure Ansible in Jenkins
 
 Go to:
 
@@ -753,7 +753,7 @@ If your command returns a different path, use that actual path.
 
 ---
 
-# 30. Configure Ansible Credentials in Jenkins
+# 14. Configure Ansible Credentials in Jenkins
 
 Jenkins needs credentials to run the Ansible deployment.
 
@@ -816,7 +816,7 @@ credentialsId: 'linuxcreds'
 
 ---
 
-# 31. Alternative - SSH Private Key Credential
+# 15. Alternative - SSH Private Key Credential
 
 A better approach than root password authentication is SSH key-based authentication.
 
@@ -858,7 +858,7 @@ Use whichever SSH user/key configuration actually exists on your worker nodes.
 
 ---
 
-# 66. Jenkins Ansible Configuration
+# 16. Jenkins Ansible Configuration
 
 Go to:
 
@@ -928,7 +928,7 @@ credentialsId: 'linuxcreds'
 
 
 
-# 32. Step 3 - Setup SonarQube
+# 17. Step 3 - Setup SonarQube
 
 SonarQube runs on:
 
@@ -958,7 +958,7 @@ Code Quality Report
 
 ---
 
-# 33. SonarQube Initial Configuration
+# 18. SonarQube Initial Configuration
 
 Login to SonarQube
 
@@ -1003,7 +1003,7 @@ If Jenkins and SonarQube are inside the same VPC, prefer the **private IP/privat
 
 ---
 
-# 36. Jenkins SonarQube Plugin
+# 19. Jenkins SonarQube Plugin
 
 Go to:
 
@@ -1020,7 +1020,7 @@ SonarQube Scanner for Jenkins
 
 ---
 
-# 37. Configure SonarQube in Jenkins
+# 20. Configure SonarQube in Jenkins
 
 Go to:
 
@@ -1067,7 +1067,7 @@ The URL must point to the EC2 instance where SonarQube is running.
 
 ---
 
-# 39. Test SonarQube Connection
+# 21. Test SonarQube Connection
 
 From the Jenkins server, test:
 
@@ -1089,7 +1089,7 @@ SonarQube EC2
 
 ---
 
-# 40. Add SonarQube Stage to Pipeline
+# 22. Add SonarQube Stage to Pipeline
 
 After the basic pipeline is working, add:
 
@@ -1103,7 +1103,7 @@ stage('SonarQube Analysis') {
 }
 ```
 
-# 41. Step 4 - Setup Amazon S3 for Artifact Storage
+# 23. Step 4 - Setup Amazon S3 for Artifact Storage
 
 Create an S3 bucket.
 
@@ -1125,7 +1125,7 @@ If the name is already taken, use another unique bucket name and update the Jenk
 
 ---
 
-# 42. Why S3 Is Used
+# 24. Why S3 Is Used
 
 After Maven package:
 
@@ -1154,7 +1154,7 @@ S3
 
 ---
 
-# 43. S3 Credentials
+# 25. S3 Credentials
 
 The Jenkins server needs permission to upload the WAR to S3.
 
@@ -1194,7 +1194,7 @@ This is preferable to hard-coding AWS Access Key and Secret Key inside Jenkinsfi
 
 ---
 
-# 44. S3 Jenkins Credential
+# 26. S3 Jenkins Credential
 
 If your selected S3 Publisher plugin configuration requires an AWS credential profile, create it in Jenkins.
 
@@ -1268,7 +1268,7 @@ s3creds
 
 ---
 
-# 46. Verify S3 Upload
+# 27. Verify S3 Upload
 
 After the Jenkins pipeline runs successfully, verify the bucket.
 
@@ -1288,7 +1288,7 @@ aws s3 ls s3://artifact-warfile/
 
 ---
 
-# 47. Important Note About S3 Publisher
+# 28. Important Note About S3 Publisher
 
 The exact `s3Upload` Pipeline syntax depends on the installed S3 Publisher plugin version.
 
@@ -1323,7 +1323,7 @@ aws s3 cp target/myapp.war s3://artifact-warfile/myapp.war
 
 ---
 
-# 48. Step 5 - Setup Tomcat Worker Nodes
+# 29. Step 5 - Setup Tomcat Worker Nodes
 
 Now we configure:
 
@@ -1348,7 +1348,7 @@ Architecture:
 
 ---
 
-# 49. Tomcat Configuration Files
+# 30. Tomcat Configuration Files
 
 Instead of manually editing:
 
@@ -1497,7 +1497,7 @@ Use the `context.xml` content required for your Tomcat Manager configuration.
 ```
 ---
 
-# 52. Tomcat Ansible Playbook
+# 31. Tomcat Ansible Playbook
 
 Create:
 
@@ -1574,7 +1574,7 @@ Use:
 
 ---
 
-# 53. IMPORTANT - Tomcat Version
+# 32. IMPORTANT - Tomcat Version
 
 The above playbook uses:
 
@@ -1612,7 +1612,7 @@ must match the downloaded file.
 
 ---
 
-# 54. About the sed Command in Your Old Notes
+# 33. About the sed Command in Your Old Notes
 
 Your old notes contain:
 
@@ -1670,7 +1670,7 @@ Therefore, these files must be available from the Ansible playbook's expected lo
 
 ---
 
-# 56. Run Tomcat Setup Playbook
+# 34. Run Tomcat Setup Playbook
 
 Once everything is ready:
 
@@ -1704,7 +1704,7 @@ Enable Tomcat at boot
 
 ---
 
-# 57. Check Tomcat Service
+# 35. Check Tomcat Service
 
 On worker nodes:
 
@@ -1720,7 +1720,7 @@ ss -lntp | grep 8080
 
 ---
 
-# 58. Access Tomcat
+# 36. Access Tomcat
 
 Open:
 
@@ -1738,12 +1738,12 @@ You should see the Tomcat page.
 
 ---
 
-# 59. Tomcat Manager
+## Tomcat Manager
 
 If Manager application is configured, open:
 
 ```text
-http://<TOMCAT-IP>:8080/manager/html
+http://<TOMCAT-IP>:8080/manager
 ```
 
 Use the configured:
@@ -1763,7 +1763,7 @@ root123456
 ```
 ---
 
-# 60. Where Is the Tomcat Password Used?
+## Where Is the Tomcat Password Used?
 
 This is important.
 
@@ -1807,7 +1807,7 @@ The Tomcat Manager username/password is not required by the final Ansible `copy`
 
 ---
 
-# 61. Manual Ansible Deployment Test
+# 37. Manual Ansible Deployment Test
 
 Before integrating deployment with Jenkins, test Ansible manually.
 
@@ -1897,7 +1897,7 @@ Ansible Master
 
 ---
 
-# 64. Why Manual Deployment Is Not Enough
+# 38. Why Manual Deployment Is Not Enough
 
 The manual process requires:
 
@@ -1917,7 +1917,7 @@ Therefore, we integrate Ansible with Jenkins.
 
 ---
 
-# 65. Step 6 - Integrate Ansible with Jenkins
+# 38. Step 6 - Integrate Ansible with Jenkins
 
 Move the deployment playbook to:
 
@@ -1943,7 +1943,7 @@ You can keep:
 ```
 ---
 
-# 69. Configure Ansible Playbook
+## Configure Ansible Playbook
 
 Jenkins will use:
 
@@ -1966,19 +1966,6 @@ Example:
 ```
 
 ---
-
-# 70. Final Jenkins Pipeline
-
-Once the following components are working independently:
-
-```text
-GitHub
-Maven
-SonarQube
-S3
-Ansible
-Tomcat
-```
 
 use the final pipeline.
 
@@ -2043,7 +2030,7 @@ pipeline {
 
 ---
 
-# 71. Final Pipeline Explained Stage by Stage
+# 39. Final Pipeline Explained Stage by Stage
 
 ## Stage 1 - Checkout
 
@@ -2191,7 +2178,7 @@ Tomcat 1         Tomcat 2
 ```
 
 ---
-# 74. Credentials and Password Reference
+# 40. Credentials and Password Reference
 
 This section is important because several different credentials are used in the project.
 
@@ -2287,45 +2274,7 @@ The Jenkinsfile contains:
 ```groovy
 profileName: 's3creds'
 ```
-
-but not the actual AWS secret.
-
----
-
-# 75. Recommended Project Structure
-
-A clean GitHub repository can look like this:
-
-```text
-enterprise-java-cicd/
-│
-├── src/
-│   ├── main/
-│   │   └── java/
-│   │
-│   └── test/
-│
-├── ansible/
-│   ├── hosts
-│   ├── tomcat.yml
-│   ├── tomcat-users.xml
-│   ├── context.xml
-│   └── deploy.yml
-│
-├── docs/
-│   └── architecture.png
-│
-├── Jenkinsfile
-├── pom.xml
-├── README.md
-├── steps.md
-├── .gitignore
-└── LICENSE
-```
-
----
-
-# 76. Jenkinsfile
+# 41. Jenkinsfile
 
 The final Jenkins pipeline should be stored in the root of the GitHub repository as:
 
@@ -2350,7 +2299,7 @@ Jenkinsfile.groovy
 
 ---
 
-# 77. Configure Jenkins Pipeline From SCM
+# 42. Configure Jenkins Pipeline From SCM
 
 Instead of copying the pipeline manually every time, configure Jenkins to read the `Jenkinsfile` from GitHub.
 
@@ -2399,7 +2348,7 @@ Now Jenkins automatically reads the pipeline from GitHub.
 
 ---
 
-# 78. What Happens When Code Changes?
+# 43. What Happens When Code Changes?
 
 Suppose the developer changes:
 
@@ -2445,7 +2394,7 @@ Therefore both worker nodes receive the new application version.
 
 ---
 
-# 79. Troubleshooting Checklist
+# 44. Troubleshooting Checklist
 
 ## Jenkins is not starting
 
@@ -2634,55 +2583,6 @@ Check:
 
 ```bash
 tail -f /root/tomcat/logs/catalina.out
-```
-
----
-
-# 80. Important Security Rules
-
-Never commit these to GitHub:
-
-```text
-AWS Access Key
-AWS Secret Key
-SSH Private Key
-.pem files
-Jenkins passwords
-Tomcat passwords
-SonarQube tokens
-Database passwords
-.env files
-Production credentials
-```
-
-Use:
-
-```text
-Jenkins Credentials
-IAM Roles
-Ansible Vault
-AWS Secrets Manager
-Environment Variables
-```
-
-where appropriate.
-
-For a public GitHub repository, never put real passwords inside:
-
-```text
-tomcat-users.xml
-```
-
-or:
-
-```text
-steps.md
-```
-
-Use placeholders such as:
-
-```text
-CHANGE_ME
 ```
 
 ---
