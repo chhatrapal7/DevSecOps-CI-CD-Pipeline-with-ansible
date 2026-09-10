@@ -1,4 +1,4 @@
-# Enterprise Java Application CI/CD & Automated Deployment
+# Automated Java CI/CD Pipeline with Jenkins & Ansible
 
 This document explains the complete setup of an end-to-end Java CI/CD pipeline using:
 
